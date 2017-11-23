@@ -45,8 +45,13 @@ int pulse_width = 200;
 int motor_acceleration = 2000;
 
 //stepper speed variables
+<<<<<<< Updated upstream
 int stepperMaxSpeed = 600;
 float stepperSpeed = 600;
+=======
+int stepperMaxSpeed = 800;
+float stepperSpeed = 400;
+>>>>>>> Stashed changes
 
 //ROS publish timer stuff
 unsigned long previousMillis = 0;  // last time update
@@ -62,7 +67,7 @@ int steper_counts_1, steper_counts_2, steper_counts_3, steper_counts_4;
 //float maxX = 70.7, maxY = 70.7, current_x = 35, current_y = 35, X, Y;
 int speed1, speed2, speed3, speed4;
 
-float maxX = 71.5, maxY = 89.5;
+float maxX = 89.5, maxY = 71.5;
 float xBorder = 10;
 float yBorder = 10;
 float maxYstop = maxY;
@@ -86,10 +91,10 @@ float stepScale =  PI * spoolD / 200;
 //float stepScale =  PI * spoolD / 200;
 
 //starting lengths of cable
-float starting_length_1 = 57.28;
-float starting_length_2 = 57.28;
-float starting_length_3 = 57.28;
-float starting_length_4 = 57.28;
+float starting_length_1 = 53.28;
+float starting_length_2 = 53.28;
+float starting_length_3 = 53.28;
+float starting_length_4 = 53.28;
 
 //Variables to hold coordinates for end effector
 float x, y, z = 1;
@@ -218,8 +223,7 @@ void loop() {
     //current cable lengths
     quat_msg.x = length_1;
     quat_msg.y = length_2;
-    quat_msg.z = length_3;
-    quat_msg.w = length_4;
+
     lengths_pub.publish(&quat_msg);
 
     //Tells the user if the endstops are triggered via /endstop_publisher
@@ -266,7 +270,8 @@ void recalculate_gripper_position(void) {
   curent_length_2 = round((stepper2.currentPosition() * stepScale) + starting_length_2);
   curent_length_3 = round((stepper3.currentPosition() * stepScale) + starting_length_3);
   curent_length_4 = round((stepper4.currentPosition() * stepScale) + starting_length_4);
-
+    quat_msg.z = curent_length_1;
+    quat_msg.w = starting_length_1;
   //get current (x,y) from lengths
   current_x = maxX / 2 + (sq(curent_length_3) - sq(curent_length_4)) / (2 * maxX);
   current_y = maxY / 2 + (sq(curent_length_4) - sq(curent_length_1)) / (2 * maxY);
@@ -280,8 +285,8 @@ void calculate_lengths(float &dX, float &dY) {
   recalculate_gripper_position();
   
   //get new lengths
-  length_1 = sqrt(sq(maxX - (current_x + dX)) + sq(maxY - (current_y + dY)));
-  length_2 = sqrt(sq(      current_x + dX)  + sq(maxY - (current_y + dY)));
+  length_2 = sqrt(sq(maxX - (current_x + dX)) + sq(maxY - (current_y + dY)));
+  length_1 = sqrt(sq(      current_x + dX)  + sq(maxY - (current_y + dY)));
   length_3 = sqrt(sq(      current_x + dX)  + sq(        current_y + dY));
   length_4 = sqrt(sq(maxX - (current_x + dX)) + sq(        current_y + dY));
   length_1 = round(length_1);
@@ -460,11 +465,23 @@ void calculate_speeds(float d1, float d2, float d3, float d4) {
   float speedM3 = change_in_length_3 / maxSpeed1;
   float speedM4 = change_in_length_4 / maxSpeed1;
   //apply global speed scaler
+  acceleration_scale();
   speed1 = round(stepperSpeed * speedM1);
   speed2 = round(stepperSpeed * speedM2);
   speed3 = round(stepperSpeed * speedM3);
   speed4 = round(stepperSpeed * speedM4);
 }
+
+void acceleration_scale(void){
+  float beta = 0.999999999;
+  
+ stepperSpeed = round(beta*stepperSpeed + (1-beta)*stepperMaxSpeed);
+ 
+ if ((dataX == 0 ) && (dataY == 0)){
+  stepperSpeed = 0;
+ }
+}
+
 
 void set_speeds(void) {
   stepper1.setSpeed(speed1);
