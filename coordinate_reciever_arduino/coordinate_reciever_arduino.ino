@@ -1,4 +1,4 @@
-  
+
 #include <AccelStepper.h>
 //#include <PID_v1.h>
 #include <ros.h>
@@ -179,9 +179,11 @@ ros::Subscriber<std_msgs::Bool> catcher_return_home("/catcher_return_home", &cat
 #ifdef ros_everything
 
 void speedSetCb( const geometry_msgs::Point& data);
+void tensioning_cb( const std_msgs::Int16& data);
 
 //Create ROS subscribers
 ros::Subscriber<geometry_msgs::Point> motor_speed_subscriber("/motor_speed_set", &speedSetCb);
+ros::Subscriber<std_msgs::Int16> tensioning_subscriber("/tensioning_topic", &tensioning_cb);
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// END OF ROS PUBS & SUBS ///////////////////////////////////////
@@ -195,6 +197,7 @@ void setup () {
   //Initialize subscribers & publishers
   nh.subscribe(coordinate_subscriber);
   nh.subscribe(catcher_return_home);
+  nh.subscribe(tensioning_subscriber);
 
 #ifdef ros_everything
   nh.subscribe(motor_speed_subscriber);
@@ -296,7 +299,7 @@ void loop() {
   //int loop_timer = micros();
 
 
-   perform_calculations();
+  perform_calculations();
 
   endStopCheck2();
 
@@ -363,6 +366,27 @@ void loop() {
 
 
 
+void tensioning_cb(const std_msgs::Int16& data) {
+  restore_default_speeds();
+  set_speeds();
+  stepper1.moveTo(data.data);
+  stepper2.moveTo(data.data);
+  stepper3.moveTo(data.data);
+  stepper4.moveTo(data.data);
+
+  while ((stepper1.currentPosition() != data.data) && (stepper2.currentPosition() != data.data) && (stepper3.currentPosition() != data.data) && (stepper4.currentPosition() != data.data)) {
+  /*  stepper1.runSpeedToPosition();
+    stepper2.runSpeedToPosition();
+    stepper3.runSpeedToPosition();
+    stepper4.runSpeedToPosition();
+*/
+    stepper1.run();
+    stepper2.run();
+    stepper3.run();
+    stepper4.run();
+    nh.spinOnce();
+  }
+}
 
 
 
@@ -548,16 +572,20 @@ int pulse_width = 200;
 int motor_acceleration = 2000;
 
 //stepper speed variables
-int stepperMaxSpeed = 600;
-float stepperSpeed = 600;
+int stepperMaxSpeed = 200;
+float stepperSpeed = 200;
 
 void restore_default_speeds(void) {
   pulse_width = 200;
   motor_acceleration = 2000;
 
   //stepper speed variables
-  stepperMaxSpeed = 600;
-  stepperSpeed = 600;
+  stepperMaxSpeed = 200;
+  stepperSpeed = 200;
+  speed1 = stepperSpeed;
+  speed2 = stepperSpeed;
+  speed3 = stepperSpeed;
+  speed4 = stepperSpeed;
 
 }
 
