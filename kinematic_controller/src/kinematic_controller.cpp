@@ -28,21 +28,16 @@ void cameraDataCallback(const geometry_msgs::Point::ConstPtr& data){
 
 void restore_default_speeds(void) {
 }
-void cameraDataCallback(const geometry_msgs::Point::ConstPtr& data){
-	dataX = data->data.z;
-	dataY = data->y;
-	perform_calculations();
-}
 
 
 void endStopCheck(void) {
-	((dataX < 160) && (current_x <= minX)) ? endstop1 = true : endstop1 = false;
-	((dataX > 160) && (current_x >= maxX)) ? endstop2 = true : endstop2 = false;
-	((dataY < 120) && (current_y <= minY)) ? endstop3 = true : endstop3 = false;
-	((dataY > 120) && (current_y >= maxY)) ? endstop4 = true : endstop4 = false;
+//	((dataX < 160) && (current_x <= minX)) ? endstop1 = true : endstop1 = false;
+//	((dataX > 160) && (current_x >= maxX)) ? endstop2 = true : endstop2 = false;
+//	((dataY < 120) && (current_y <= minY)) ? endstop3 = true : endstop3 = false;
+//	((dataY > 120) && (current_y >= maxY)) ? endstop4 = true : endstop4 = false;
 }
 
-
+bool endStopX, endStopY, endStop;
 bool endStopCheck2(void) {
 	recalculate_gripper_position();
 
@@ -269,7 +264,7 @@ int main(int argc, char **argv)
    */
 
 	while (ros::ok()){
-	ros::spinOnce();
+		ros::spinOnce();
 
 
 	}
@@ -277,5 +272,5 @@ int main(int argc, char **argv)
 	//endStopCheck2();
 
 
-return 0;
+	return 0;
 }
